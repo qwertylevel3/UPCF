@@ -3,7 +3,7 @@
 import csv
 import math
 
-ratingFile = 'smallData/ratings.csv'
+ratingFile = 'data/ratings.csv'
 itemMatrixFile = 'temp/itemMatrix.csv'
 unknowItemMatrixFile = 'temp/unknowItemMatrix.csv'
 intimacyMatrixFile = 'temp/intimacyMatrix.csv'
@@ -167,10 +167,10 @@ def forecast(u, q, R, intimacy, Nu):
     tempDown = 0.0
     for v in Nu:
         Rv = mean(v, R)
-        tUp = intimacy[u][v] * (R.getData(v, q) - Rv)
+        tUp = intimacy[u][v]["value"] * (R.getData(v, q) - Rv)
         tempUp += tUp
 
-        tDown = abs(intimacy[u][v])
+        tDown = abs(intimacy[u][v]["value"])
         tempDown += tDown
 
     if tempDown == 0:
@@ -178,6 +178,8 @@ def forecast(u, q, R, intimacy, Nu):
 
     result = Ru + tempUp / tempDown
 
+    if result < 0:
+        result = 0
     if result > 5:
         result = 5
     return result
@@ -266,7 +268,8 @@ def getNearestMatrix(nearestNum, userNum, intimacy):
         nearestList = intimacy[i][1:userNum + 1]
         nearestList.sort(cmp=None, key=lambda intim: intim["value"], reverse=True)
         # 取前nearestNum个
-        nearestList = nearestList[0:nearestNum]
+        # 不取第一个，第一个一定是自己
+        nearestList = nearestList[1:nearestNum+1]
 
         nearestIdList = []
 
@@ -323,6 +326,20 @@ def getIntimacyMatrix(U, R):
     return intimacy
 
 
+def getForecastMatrix(unknowItemMatrix, intimacy, nearest, R):
+    result = []
+    # 对于每一个用户
+    for i in range(0, len(unknowItemMatrix)):
+        userIndex = i + 1
+        forecastList = []
+        # 预测用户的每一个未知项目评分
+        for j in range(0, len(unknowItemMatrix[i])):
+            f = forecast(userIndex, unknowItemMatrix[i][j], R, intimacy, nearest[userIndex])
+            forecastList.append(f)
+        result.append(forecastList)
+    return result
+
+
 print("---start---")
 
 print("initData...")
@@ -340,27 +357,33 @@ for i in range(0, len(intimacy)):
     for item in line:
         intimacyMatrix[i].append(item["value"])
 
-# writeMatrixPart(intimacyMatrix, intimacyMatrixFile,
-#           1,len(intimacyMatrix)-1,
-#           1,len(intimacyMatrix[0])-1)
+writeMatrixPart(intimacyMatrix, intimacyMatrixFile,
+                1, len(intimacyMatrix) - 1,
+                1, len(intimacyMatrix[0]) - 1)
 
 print("calculate intimacy over")
 
 print("calculate nearest")
 
-# 最近邻5个人
-nearest = getNearestMatrix(15, len(U), intimacy)
+# 最近邻20个人
+nearest = getNearestMatrix(20, len(U), intimacy)
 
-# writeMatrixPart(nearest, "temp/nearestMatrix.csv",
-#                1, len(nearest) - 1,
-#                0, len(nearest[1]) - 1)
+writeMatrixPart(nearest, "temp/nearestMatrix.csv",
+                1, len(nearest) - 1,
+                0, len(nearest[1]) - 1)
 
 print("calculate nearest over")
 
+print("calculate unknowItemMatrix")
 itemMatrix = getItemMatrix(U, R)
-# writeMatrix(itemMatrix, "temp/itemMatrix.csv")
+writeMatrix(itemMatrix, "temp/itemMatrix.csv")
 
 unknowItemMatrix = getUnknowItemMatrix(U, R, nearest)
-# writeMatrix(unknowItemMatrix, "temp/unknowItemMatrix.csv")
+writeMatrix(unknowItemMatrix, "temp/unknowItemMatrix.csv")
+print("calculate unknowItemMatrix over")
+
+forecastMatrix = getForecastMatrix(unknowItemMatrix, intimacy, nearest, R)
+
+writeMatrix(forecastMatrix, "temp/forecastMatrix.csv")
 
 print("---end---")
