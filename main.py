@@ -225,6 +225,7 @@ def writeMatrix(matrix, fileName):
             writer.writerow(line)
 
 
+# TODO write data
 def writeMatrixPart(matrix, fileName, a, b, c, d):
     with open(fileName, 'wb') as csvfile:
         writer = csv.writer(csvfile, dialect='excel')
@@ -251,6 +252,7 @@ def getItemMatrix(U, R):
 # 获取用户位置项目矩阵
 def getUnknowItemMatrix(U, R, nearest):
     unknowMatrix = []
+    unknowMatrix.append([])
 
     for u in U:
         tempList = getUnknowItem(u, R, nearest)
@@ -269,7 +271,7 @@ def getNearestMatrix(nearestNum, userNum, intimacy):
         nearestList.sort(cmp=None, key=lambda intim: intim["value"], reverse=True)
         # 取前nearestNum个
         # 不取第一个，第一个一定是自己
-        nearestList = nearestList[1:nearestNum+1]
+        nearestList = nearestList[1:nearestNum + 1]
 
         nearestIdList = []
 
@@ -329,12 +331,11 @@ def getIntimacyMatrix(U, R):
 def getForecastMatrix(unknowItemMatrix, intimacy, nearest, R):
     result = []
     # 对于每一个用户
-    for i in range(0, len(unknowItemMatrix)):
-        userIndex = i + 1
+    for i in range(1, len(unknowItemMatrix)):
         forecastList = []
         # 预测用户的每一个未知项目评分
         for j in range(0, len(unknowItemMatrix[i])):
-            f = forecast(userIndex, unknowItemMatrix[i][j], R, intimacy, nearest[userIndex])
+            f = forecast(i, unknowItemMatrix[i][j], R, intimacy, nearest[i])
             forecastList.append(f)
         result.append(forecastList)
     return result
