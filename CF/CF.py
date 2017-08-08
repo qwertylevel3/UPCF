@@ -7,6 +7,12 @@ from util.path import *
 from util.helpFun import *
 
 
+itemFile = 'temp/item.csv'
+nearestFile= "temp/nearest.csv"
+unknowItemFile = 'temp/unknowItem.csv'
+intimacyFile = 'temp/intimacy.csv'
+forecastFile= "temp/forecast.csv"
+
 
 # 初始化数据
 #
@@ -297,7 +303,7 @@ def run():
         for item in line:
             intimacyMatrix[i].append(item["value"])
 
-    saveDataRowCol(intimacyMatrix, intimacyMatrixFile,
+    saveDataRowCol(intimacyMatrix, intimacyFile,
                    1, len(intimacyMatrix) - 1,
                    1, len(intimacyMatrix[0]) - 1)
 
@@ -308,7 +314,7 @@ def run():
     # 最近邻20个人
     nearest = getNearestMatrix(20, len(U), intimacy)
 
-    saveDataRowCol(nearest, "temp/nearestMatrix.csv",
+    saveDataRowCol(nearest, nearestFile,
                    1, len(nearest) - 1,
                    0, len(nearest[1]) - 1)
 
@@ -316,14 +322,14 @@ def run():
 
     print("calculate unknowItemMatrix")
     itemMatrix = getItemMatrix(U, R)
-    saveData(itemMatrix, "temp/itemMatrix.csv")
+    saveData(itemMatrix, itemFile)
 
     unknowItemMatrix = getUnknowItemMatrix(U, R, nearest)
-    saveData(unknowItemMatrix, "temp/unknowItemMatrix.csv")
+    saveData(unknowItemMatrix, unknowItemFile)
     print("calculate unknowItemMatrix over")
 
     forecastMatrix = getForecastMatrix(unknowItemMatrix, intimacy, nearest, R)
 
-    saveData(forecastMatrix, "temp/forecastMatrix.csv")
+    saveData(forecastMatrix, forecastFile)
 
     print("---end---")
