@@ -1,4 +1,4 @@
-# coding:utf-8
+# -*- coding: utf-8 -*-
 
 import csv
 import math
@@ -6,12 +6,11 @@ from RMatrix import *
 from util.path import *
 from util.helpFun import *
 
-
 itemFile = 'temp/item.csv'
-nearestFile= "temp/nearest.csv"
+nearestFile = "temp/nearest.csv"
 unknowItemFile = 'temp/unknowItem.csv'
 intimacyFile = 'temp/intimacy.csv'
-forecastFile= "temp/forecast.csv"
+forecastFile = "temp/forecast.csv"
 
 
 # 初始化数据
@@ -288,48 +287,46 @@ def getForecastMatrix(unknowItemMatrix, intimacy, nearest, R):
 def run():
     print("---start---")
 
+    # 读取数据
     print("initData...")
     U, I, R = initData()
     print("initData over")
 
+    # 计算用户相似度矩阵
     print("calculate intimacy")
-
     intimacy = getIntimacyMatrix(U, R)
-
     intimacyMatrix = []
     for i in range(0, len(intimacy)):
         line = intimacy[i]
         intimacyMatrix.append([])
         for item in line:
             intimacyMatrix[i].append(item["value"])
-
     saveDataRowCol(intimacyMatrix, intimacyFile,
                    1, len(intimacyMatrix) - 1,
                    1, len(intimacyMatrix[0]) - 1)
-
     print("calculate intimacy over")
 
+    # 计算最近邻用户
     print("calculate nearest")
-
     # 最近邻20个人
     nearest = getNearestMatrix(20, len(U), intimacy)
-
     saveDataRowCol(nearest, nearestFile,
                    1, len(nearest) - 1,
                    0, len(nearest[1]) - 1)
-
     print("calculate nearest over")
 
+    # 计算用户未知项目集合
     print("calculate unknowItemMatrix")
     itemMatrix = getItemMatrix(U, R)
     saveData(itemMatrix, itemFile)
-
     unknowItemMatrix = getUnknowItemMatrix(U, R, nearest)
     saveData(unknowItemMatrix, unknowItemFile)
     print("calculate unknowItemMatrix over")
 
+    # 对未知项目集合预测评分
+    print("forecast...")
     forecastMatrix = getForecastMatrix(unknowItemMatrix, intimacy, nearest, R)
-
     saveData(forecastMatrix, forecastFile)
+    print("forecast over")
 
     print("---end---")

@@ -1,5 +1,4 @@
-# coding:utf-8
-
+# -*- coding: utf-8 -*-
 
 class RMatrix:
     def __init__(self, movieidMap, movieidMapR, lenx=0, leny=0):
