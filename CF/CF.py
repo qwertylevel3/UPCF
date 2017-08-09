@@ -6,11 +6,14 @@ from RMatrix import *
 from util.path import *
 from util.helpFun import *
 
+from evaluate import evaluate
+
 itemFile = 'temp/item.csv'
 nearestFile = "temp/nearest.csv"
 unknowItemFile = 'temp/unknowItem.csv'
 intimacyFile = 'temp/intimacy.csv'
 forecastFile = "temp/forecast.csv"
+
 
 
 # 初始化数据
@@ -19,18 +22,9 @@ forecastFile = "temp/forecast.csv"
 # U:所有用户id列表
 # I:所有项目id列表
 # R:评分矩阵(r(i,j)=>用户i对项目j的评分)
-def initData():
+def initData(allData):
     U = []
     I = []
-
-    # 读入数据
-    csv_reader = csv.reader(open(ratingFile))
-
-    allData = []
-    for line in csv_reader:
-        allData.append(line)
-    # 去除表头
-    allData = allData[1:len(allData)]
 
     # 填充数据
     for line in allData:
@@ -284,12 +278,14 @@ def getForecastMatrix(unknowItemMatrix, intimacy, nearest, R):
     return result
 
 
-def run():
+
+def run(testDataFile, checkDataFile,forecastDataFile):
     print("---start---")
 
     # 读取数据
     print("initData...")
-    U, I, R = initData()
+    allData=readCSVnoTitle(testDataFile)
+    U, I, R = initData(allData)
     print("initData over")
 
     # 计算用户相似度矩阵
@@ -315,18 +311,27 @@ def run():
                    0, len(nearest[1]) - 1)
     print("calculate nearest over")
 
-    # 计算用户未知项目集合
-    print("calculate unknowItemMatrix")
-    itemMatrix = getItemMatrix(U, R)
-    saveData(itemMatrix, itemFile)
-    unknowItemMatrix = getUnknowItemMatrix(U, R, nearest)
-    saveData(unknowItemMatrix, unknowItemFile)
-    print("calculate unknowItemMatrix over")
 
-    # 对未知项目集合预测评分
     print("forecast...")
-    forecastMatrix = getForecastMatrix(unknowItemMatrix, intimacy, nearest, R)
-    saveData(forecastMatrix, forecastFile)
+
+    checkData=readCSV(checkDataFile)
+    realValue=[]
+    forecastValue=[]
+    forecastMatrix=[]
+    for line in checkData:
+        realValue.append(float(line[2]))
+
+    for line in checkData:
+        u=int(line[0])
+        item=int(line[1])
+        f=forecast(u,item,R,intimacy,nearest[u])
+        forecastValue.append(f)
+        forecastMatrix.append([u,item,f])
+
+    saveData(forecastMatrix,forecastDataFile)
     print("forecast over")
 
     print("---end---")
+
+    return evaluate.getMAE(forecastValue,realValue)
+

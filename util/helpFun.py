@@ -2,6 +2,27 @@
 import csv
 
 
+# 读取csv文件
+def readCSV(fileName):
+    # 读入数据
+    csv_reader = csv.reader(open(fileName))
+
+    allData = []
+    for line in csv_reader:
+        allData.append(line)
+    return allData
+
+def readCSVnoTitle(fileName):
+    # 读入数据
+    csv_reader = csv.reader(open(fileName))
+
+    allData = []
+    for line in csv_reader:
+        allData.append(line)
+    # 去除表头
+    allData = allData[1:len(allData)]
+    return allData
+
 # 写入数据到csv文件中
 def saveData(matrix, fileName):
     with open(fileName, 'wb') as csvfile:

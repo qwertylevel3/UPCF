@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+# TODO 稀疏矩阵未评分项目填充
 class RMatrix:
     def __init__(self, movieidMap, movieidMapR, lenx=0, leny=0):
         # movie id->I id 的映射
@@ -18,6 +19,9 @@ class RMatrix:
 
     def getData(self, i, j):
         ii = i
+        # TODO 防止越界
+        if j not in self.movieidMap:
+            return 0
         jj = self.movieidMap[j]
         return self.matrix[ii][jj]
 
@@ -34,4 +38,3 @@ class RMatrix:
 
     def getRow(self, index):
         return self.matrix[index]
-
