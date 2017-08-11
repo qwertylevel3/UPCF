@@ -338,7 +338,7 @@ def run(testDataFile, checkDataFile, forecastDataFile, realDataFile):
             forecastValue.append(f)
             realValue.append(real)
             forecastMatrix.append([u, item, f])
-            realMatrix.append([real, item, f])
+            realMatrix.append([u, item, real])
 
     saveData(forecastMatrix, forecastDataFile)
     saveData(realMatrix, realDataFile)
