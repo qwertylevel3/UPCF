@@ -15,7 +15,6 @@ intimacyFile = 'temp/intimacy.csv'
 forecastFile = "temp/forecast.csv"
 
 
-
 # 初始化数据
 #
 # ret:
@@ -278,13 +277,12 @@ def getForecastMatrix(unknowItemMatrix, intimacy, nearest, R):
     return result
 
 
-
-def run(testDataFile, checkDataFile,forecastDataFile):
+def run(testDataFile, checkDataFile, forecastDataFile, realDataFile):
     print("---start---")
 
     # 读取数据
     print("initData...")
-    allData=readCSVnoTitle(testDataFile)
+    allData = readCSVnoTitle(testDataFile)
     U, I, R = initData(allData)
     print("initData over")
 
@@ -311,27 +309,42 @@ def run(testDataFile, checkDataFile,forecastDataFile):
                    0, len(nearest[1]) - 1)
     print("calculate nearest over")
 
-
     print("forecast...")
 
-    checkData=readCSV(checkDataFile)
-    realValue=[]
-    forecastValue=[]
-    forecastMatrix=[]
-    for line in checkData:
-        realValue.append(float(line[2]))
+    # 预测
+    # 对每个待预测的项目，找近邻用户中有这个项目评分的，作为预测依据
+    checkData = readCSV(checkDataFile)
+    realValue = []
+    forecastValue = []
+    forecastMatrix = []
+    realMatrix = []
 
     for line in checkData:
-        u=int(line[0])
-        item=int(line[1])
-        f=forecast(u,item,R,intimacy,nearest[u])
-        forecastValue.append(f)
-        forecastMatrix.append([u,item,f])
+        u = int(line[0])
+        item = int(line[1])
+        real = float(line[2])
 
-    saveData(forecastMatrix,forecastDataFile)
+        userList = []
+
+        flag = False
+        for nearUser in nearest[u]:
+            itemList = getItemList(nearUser, R)
+            if item in itemList:
+                flag = True
+                userList.append(nearUser)
+        # 如果一个用户都没有，直接跳过这个项目
+        if flag:
+            f = forecast(u, item, R, intimacy, userList)
+            forecastValue.append(f)
+            realValue.append(real)
+            forecastMatrix.append([u, item, f])
+            realMatrix.append([real, item, f])
+
+    saveData(forecastMatrix, forecastDataFile)
+    saveData(realMatrix, realDataFile)
+
     print("forecast over")
 
     print("---end---")
 
-    return evaluate.getMAE(forecastValue,realValue)
-
+    return evaluate.getMAE(forecastValue, realValue)
