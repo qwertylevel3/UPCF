@@ -44,11 +44,10 @@ def initData(allData):
         movieidMapR[i] = I[i]
     R = RMatrix(movieidMap, movieidMapR, len(U), len(I))
 
-    for line in allData:
-        userid = int(line[0])
-        movieid = int(line[1])
+    R.initData(allData)
+    saveData(R.matrix,"temp/matrix.csv")
+    saveData(R.filledMatrix,"temp/filledMatrix.csv")
 
-        R.setData(float(line[2]), userid, movieid)
     return U, I, R
 
 
@@ -107,15 +106,7 @@ def sim(u, v, R):
 
 # 计算用户u的评分项目均值
 def mean(u, R):
-    Ru = 0.0
-    Du = R.getRow(u)
-    # 计算均值
-    count = 0
-    for i in range(0, len(Du)):
-        if Du[i] != 0.0:
-            Ru += Du[i]
-            count = count + 1
-    return Ru / count
+    return R.getMean(u)
 
 
 # 预测用户u对q的评分
@@ -146,15 +137,7 @@ def forecast(u, q, R, intimacy, Nu):
 
 # 返回u的评价项目id列表
 def getItemList(u, R):
-    result = []
-    movieidMapR = R.getMovieidMapR()
-    itemList = R.getRow(u)
-
-    for i in range(0, len(itemList)):
-        if itemList[i] > 0:
-            result.append(movieidMapR[i])
-    return result
-
+    return R.getItemIDList(u)
 
 # 获取u的未知项目列表
 def getUnknowItem(u, R, nearest):
