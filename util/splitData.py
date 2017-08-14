@@ -2,7 +2,7 @@
 
 import csv
 from random import sample
-from util.helpFun import saveData
+from util.mycsv import saveData
 
 
 # 将评分数据切分为测试集合和训练集合
@@ -62,5 +62,5 @@ def extractRatingSample(ratingFile, checkDataFileName, testDataFileName):
 def extractSample(oriFile):
     for i in range(0, 5):
         extractRatingSample(oriFile,
-                            "temp/sample/check_" + str(i) + ".csv",
-                            "temp/sample/test_" + str(i) + ".csv")
+                            "temp/BaseCF/check_" + str(i) + ".csv",
+                            "temp/BaseCF/test_" + str(i) + ".csv")

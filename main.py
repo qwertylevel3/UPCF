@@ -3,17 +3,24 @@
 
 
 from util import splitData
-from CF import CF
+from CF import BaseCF
+from util import kmeans
 
 
 def main():
-    #    splitData.extractSample("data/ratings.csv")
-    # 5次实验，取平均值
+    kmeans.testKMeans()
 
-    mae0 = CF.run("temp/sample/test_0.csv",
-                  "temp/sample/check_0.csv",
-                  "temp/sample/forecast_0.csv",
-                  "temp/sample/real_0.csv")
+
+
+# splitData.extractSample("data/ratings.csv")
+# 5次实验，取平均值
+
+#    mae0 = BaseCF.run("temp/BaseCF/test_0.csv",
+#                  "temp/BaseCF/check_0.csv",
+#                  "temp/BaseCF/forecast_0.csv",
+#                  "temp/BaseCF/real_0.csv")
+
+
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import csv
 import math
 from RMatrix import *
 from util.path import *
-from util.helpFun import *
+from util.mycsv import *
 
 from evaluate import evaluate
 
@@ -159,7 +159,7 @@ def getUnknowItem(u, R, nearest):
     return itemSet
 
 
-# 获取用户评价项目矩阵
+# 计算用户评价项目矩阵
 def getItemMatrix(U, R):
     itemMatrix = []
 
@@ -168,7 +168,7 @@ def getItemMatrix(U, R):
     return itemMatrix
 
 
-# 获取用户位置项目矩阵
+# 获取用户未知项目矩阵
 def getUnknowItemMatrix(U, R, nearest):
     unknowMatrix = []
     unknowMatrix.append([])
