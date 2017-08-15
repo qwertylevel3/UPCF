@@ -9,18 +9,26 @@ from CF import BaseCF
 
 
 def run():
-    allData = mycsv.readCSVnoTitle("smallData/ratings.csv")
+    print("run start")
+    allData = mycsv.readCSVnoTitle("output/big/test_0.csv")
+    print("read allData over")
 
     cf = UPCF(allData)
+    print("init upcf over")
     print cf.run(
-        "output/check_2.csv",
-        "output/UPCF/forecast_2.csv",
-        "output/UPCF/real_2.csv"
+        "output/big/check_0.csv",
+        "output/UPCF/forecast_0.csv",
+        "output/UPCF/real_0.csv"
     )
+
+
+def makeData():
+    splitData.extractSample("data/ratings.csv")
 
 
 def main():
     run()
+
 
 
 

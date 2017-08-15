@@ -8,15 +8,10 @@ from util.mycsv import *
 
 from evaluate import evaluate
 from sklearn.cluster import KMeans
+from progressbar import *
 
 
 class UPCF():
-    itemFile = 'output/item.csv'
-    nearestFile = "output/nearest.csv"
-    unknowItemFile = 'output/unknowItem.csv'
-    intimacyFile = 'output/intimacy.csv'
-    forecastFile = "output/forecast.csv"
-
     def __init__(self, allData):
         # U:所有用户id列表
         # I:所有项目id列表
@@ -57,14 +52,13 @@ class UPCF():
 
         saveData(itemFeature, "output/itemFeature.csv")
 
+        print("start kmeans")
         # k-means聚类，k=20
-        self.tagList = KMeans(20).fit_predict(itemFeature)
+        self.tagList = KMeans(20, n_jobs=-1).fit_predict(itemFeature)
+        print("kmeans over")
 
-        saveVector(self.I, "output/I.csv")
-        saveVector(self.tagList, "output/tag.csv")
-
-        saveData(self.R.matrix, "output/matrix.csv")
-        saveData(self.R.filledMatrix, "output/filledMatrix.csv")
+        # TODO 加速:添加每个项目的聚类簇缓存
+        # TODO 加速:保存k-means聚类结果，下次运行直接读取
 
     # 计算用户user在item下的近邻用户组,取最近的num个
     def getUserCluster(self, user, item, num):
@@ -155,11 +149,14 @@ class UPCF():
     def forecast(self, u, q):
         Ru = self.mean(u)
 
+        # TODO 项目q可能不存在
+        # q是在check集合中的，而check集合中的项目可能不存在于test集合中
+
         # 最近10个用户
         userCluster = self.getUserCluster(u, q, 10)
 
         # 如果没有近邻用户，返回0
-        if len(userCluster)==0:
+        if len(userCluster) == 0:
             return 0
 
         # 项目簇
@@ -210,6 +207,7 @@ class UPCF():
         return cluster
 
     def run(self, checkDataFile, forecastDataFile, realDataFile):
+        print("into run")
         # 预测
         # 对每个待预测的项目，找近邻用户中有这个项目评分的，作为预测依据
         checkData = readCSV(checkDataFile)
@@ -218,18 +216,26 @@ class UPCF():
         forecastMatrix = []
         realMatrix = []
 
+        print("start")
+        widgets = ['Progress: ', Percentage(), ' ', Bar(marker=RotatingMarker('>-=')),
+                   ' ', ETA(), ' ', FileTransferSpeed()]
+
+        pbar = ProgressBar(widgets=widgets, maxval=len(checkData)).start()
+
         for line in checkData:
             u = int(line[0])
             item = int(line[1])
             real = float(line[2])
 
             f = self.forecast(u, item)
-            if f>0:
+            if f > 0:
                 forecastValue.append(f)
                 realValue.append(real)
                 forecastMatrix.append([u, item, f])
                 realMatrix.append([u, item, real])
+            pbar.update(1)
 
+        pbar.finish()
         saveData(forecastMatrix, forecastDataFile)
         saveData(realMatrix, realDataFile)
 

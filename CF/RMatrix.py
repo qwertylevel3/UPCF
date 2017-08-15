@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import math
+from progressbar import *
 
 
 # 评分数据矩阵
@@ -50,10 +51,17 @@ class RMatrix:
 
             self.__setData(float(line[2]), userid, movieid)
 
+        print("r mean")
+
         # 计算整体均值
         self.__calculateMatrixMean()
+
+        print("r mean over")
+
+        print("start fillMatrix")
         # 填充空数据
         self.fillMatrix()
+        print("fillMatrix over")
 
     def __setData(self, data, i, j):
         ii = i
@@ -72,13 +80,12 @@ class RMatrix:
         return self.matrix[user]
 
     # 获取某个项目评分向量
-    def getFilledCol(self,itemIndex):
-        ii=self.movieidMap[itemIndex]
-        col=[]
-        for i in range(1,self.lenx):
+    def getFilledCol(self, itemIndex):
+        ii = self.movieidMap[itemIndex]
+        col = []
+        for i in range(1, self.lenx):
             col.append(self.filledMatrix[i][ii])
         return col
-
 
     # 计算用户u的评分项目均值
     def getMean(self, user):
@@ -151,7 +158,13 @@ class RMatrix:
 
     # 项目缺失值预测填充
     def fillMatrix(self):
+        widgets = ['Progress: ', Percentage(), ' ', Bar(marker=RotatingMarker('>-=')),
+                   ' ', ETA(), ' ', FileTransferSpeed()]
+
+        pbar = ProgressBar(widgets=widgets, maxval=self.lenx * self.leny).start()
         for i in range(1, self.lenx):
             for j in range(0, self.leny):
                 if self.matrix[i][j] == 0:
                     self.__fillItem(i, j)
+                    pbar.update(1)
+        pbar.finish()

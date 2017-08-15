@@ -104,5 +104,7 @@ ENV/
 /output/*.csv
 /output/BaseCF/*.csv
 /output/UPCF/*.csv
+/output/big/*.csv
+/output/small/*.csv
 
 /.idea
