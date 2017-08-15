@@ -23,6 +23,14 @@ def readCSVnoTitle(fileName):
     allData = allData[1:len(allData)]
     return allData
 
+
+# 写入数组
+def saveVector(vector,fileName):
+    with open(fileName, 'wb') as csvfile:
+        writer = csv.writer(csvfile, dialect='excel')
+        for line in vector:
+            writer.writerow([line])
+
 # 写入数据到csv文件中
 def saveData(matrix, fileName):
     with open(fileName, 'wb') as csvfile:

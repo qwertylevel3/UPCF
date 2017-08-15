@@ -3,24 +3,45 @@
 
 
 from util import splitData
+from util import mycsv
+from CF.UPCF import UPCF
 from CF import BaseCF
-from util import kmeans
+
+
+def run():
+    print("run start")
+    allData = mycsv.readCSVnoTitle("output/big/test_0.csv")
+    print("read allData over")
+
+    cf = UPCF(allData)
+    print("init upcf over")
+    print cf.run(
+        "output/big/check_0.csv",
+        "output/UPCF/forecast_0.csv",
+        "output/UPCF/real_0.csv"
+    )
+
+
+def makeData():
+    splitData.extractSample("data/ratings.csv")
 
 
 def main():
-    kmeans.testKMeans()
+    run()
 
 
 
-# splitData.extractSample("data/ratings.csv")
-# 5次实验，取平均值
-
-#    mae0 = BaseCF.run("temp/BaseCF/test_0.csv",
-#                  "temp/BaseCF/check_0.csv",
-#                  "temp/BaseCF/forecast_0.csv",
-#                  "temp/BaseCF/real_0.csv")
 
 
+
+
+    # splitData.extractSample("data/ratings.csv")
+    # 5次实验，取平均值
+
+    #    mae0 = BaseCF.run("output/BaseCF/test_0.csv",
+    #                  "output/BaseCF/check_0.csv",
+    #                  "output/BaseCF/forecast_0.csv",
+    #                  "output/BaseCF/real_0.csv")
 
 
 if __name__ == "__main__":
