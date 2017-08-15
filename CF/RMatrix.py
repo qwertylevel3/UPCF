@@ -2,6 +2,7 @@
 import math
 
 
+# 评分数据矩阵
 class RMatrix:
     def __init__(self, movieidMap, movieidMapR, lenx=0, leny=0):
         # movie id非连续，而且稀疏，故用map来映射到紧凑的序列上
@@ -9,7 +10,7 @@ class RMatrix:
 
         # movie id->Matrix id 的映射
         self.movieidMap = movieidMap
-        # I id->movie id
+        # Matrix id->movie id
         self.movieidMapR = movieidMapR
 
         # 首行0号用户,真实用户id是从1开始
@@ -67,8 +68,17 @@ class RMatrix:
         return self.movieidMapR
 
     # 获取一行(某用户的所有项目评分)
-    def getRow(self, index):
-        return self.matrix[index]
+    def getRow(self, user):
+        return self.matrix[user]
+
+    # 获取某个项目评分向量
+    def getFilledCol(self,itemIndex):
+        ii=self.movieidMap[itemIndex]
+        col=[]
+        for i in range(1,self.lenx):
+            col.append(self.filledMatrix[i][ii])
+        return col
+
 
     # 计算用户u的评分项目均值
     def getMean(self, user):

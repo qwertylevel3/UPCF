@@ -35,8 +35,8 @@ def initData(allData):
     R = RMatrix(movieidMap, movieidMapR, len(U), len(I))
 
     R.initData(allData)
-    mycsv.saveData(R.matrix,"temp/matrix.csv")
-    mycsv.saveData(R.filledMatrix,"temp/filledMatrix.csv")
+    mycsv.saveData(R.matrix,"output/matrix.csv")
+    mycsv.saveData(R.filledMatrix,"output/filledMatrix.csv")
 
     return U, I, R
 

@@ -62,5 +62,5 @@ def extractRatingSample(ratingFile, checkDataFileName, testDataFileName):
 def extractSample(oriFile):
     for i in range(0, 5):
         extractRatingSample(oriFile,
-                            "temp/BaseCF/check_" + str(i) + ".csv",
-                            "temp/BaseCF/test_" + str(i) + ".csv")
+                            "output/BaseCF/check_" + str(i) + ".csv",
+                            "output/BaseCF/test_" + str(i) + ".csv")

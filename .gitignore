@@ -101,6 +101,8 @@ ENV/
 .mypy_cache/
 
 
-/temp
+/output/*.csv
+/output/BaseCF/*.csv
+/output/UPCF/*.csv
 
 /.idea

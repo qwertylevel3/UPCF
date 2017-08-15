@@ -8,11 +8,11 @@ from util.mycsv import *
 
 from evaluate import evaluate
 
-itemFile = 'temp/item.csv'
-nearestFile = "temp/nearest.csv"
-unknowItemFile = 'temp/unknowItem.csv'
-intimacyFile = 'temp/intimacy.csv'
-forecastFile = "temp/forecast.csv"
+itemFile = 'output/item.csv'
+nearestFile = "output/nearest.csv"
+unknowItemFile = 'output/unknowItem.csv'
+intimacyFile = 'output/intimacy.csv'
+forecastFile = "output/forecast.csv"
 
 
 # 初始化数据
@@ -45,8 +45,8 @@ def initData(allData):
     R = RMatrix(movieidMap, movieidMapR, len(U), len(I))
 
     R.initData(allData)
-    saveData(R.matrix,"temp/matrix.csv")
-    saveData(R.filledMatrix,"temp/filledMatrix.csv")
+    saveData(R.matrix,"output/matrix.csv")
+    saveData(R.filledMatrix,"output/filledMatrix.csv")
 
     return U, I, R
 
