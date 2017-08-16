@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import math
 from progressbar import *
+from util import mycsv
 
 
 # 评分数据矩阵
@@ -25,6 +26,9 @@ class RMatrix:
         self.matrix = [[]]
         # 填充后的矩阵
         self.filledMatrix = [[]]
+
+        # 经凑数据，去除空评分
+        self.tightMatrix = []
 
         # user id 从1开始,0行空出,方便查找
         for i in range(0, self.lenx):
@@ -58,9 +62,21 @@ class RMatrix:
 
         print("r mean over")
 
-        print("start fillMatrix")
-        # 填充空数据
-        self.fillMatrix()
+        print("start tight matrix...")
+
+        self.calculateTightMatrix()
+        mycsv.saveData(self.tightMatrix,"output/UPCF/tightMatrix.csv")
+        print("over tight matrix")
+
+        if not os.path.exists("output/UPCF/filledMatrix.csv"):
+            print("start fillMatrix")
+            # 填充空数据
+            self.fillMatrix()
+            mycsv.saveData(self.filledMatrix, "output/UPCF/filledMatrix.csv")
+
+        else:
+            print("filledMatrix exist,read from file")
+            self.filledMatrix = mycsv.readCSV("output/UPCF/filledMatrix.csv")
         print("fillMatrix over")
 
     def __setData(self, data, i, j):
@@ -78,6 +94,10 @@ class RMatrix:
     # 获取一行(某用户的所有项目评分)
     def getRow(self, user):
         return self.matrix[user]
+
+    # 获取紧凑一行
+    def getTightRow(self,user):
+        return self.tightMatrix[user]
 
     # 获取某个项目评分向量
     def getFilledCol(self, itemIndex):
@@ -156,15 +176,34 @@ class RMatrix:
             v = 0
         return v
 
+    def calculateTightMatrix(self):
+        self.tightMatrix.append([])
+
+        for i in range(1, self.lenx):
+            self.tightMatrix.append([])
+            for j in range(0, self.leny):
+                if self.matrix[i][j] > 0:
+                    self.tightMatrix[i].append({
+                        "value": self.matrix[i][j],
+                        "index": j,
+                        "item":self.movieidMapR[j]
+                    })
+
+
+
     # 项目缺失值预测填充
     def fillMatrix(self):
-        widgets = ['Progress: ', Percentage(), ' ', Bar(marker=RotatingMarker('>-=')),
-                   ' ', ETA(), ' ', FileTransferSpeed()]
 
-        pbar = ProgressBar(widgets=widgets, maxval=self.lenx * self.leny).start()
+        widget = [Percentage(), ' ', Bar(marker=RotatingMarker('>-='))]
+
+        total = self.lenx * self.leny
+
+        pbar = ProgressBar(widgets=widget, maxval=total).start()
+        count = 0.0
         for i in range(1, self.lenx):
             for j in range(0, self.leny):
                 if self.matrix[i][j] == 0:
                     self.__fillItem(i, j)
-                    pbar.update(1)
+                count = count + 1.0
+                pbar.update(count)
         pbar.finish()

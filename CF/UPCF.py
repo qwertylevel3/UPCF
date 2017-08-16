@@ -5,7 +5,6 @@ import math
 from RMatrix import *
 from util.path import *
 from util.mycsv import *
-
 from evaluate import evaluate
 from sklearn.cluster import KMeans
 from progressbar import *
@@ -57,13 +56,15 @@ class UPCF():
         self.tagList = KMeans(20, n_jobs=-1).fit_predict(itemFeature)
         print("kmeans over")
 
-        # TODO 加速:添加每个项目的聚类簇缓存
-        # TODO 加速:保存k-means聚类结果，下次运行直接读取
+        self.itemClusterCache = {}
+        print("calculate item cluster cache")
+        self.calculateItemCluster()
+        print("calculate item cluster cache over")
 
     # 计算用户user在item下的近邻用户组,取最近的num个
     def getUserCluster(self, user, item, num):
         # 项目的聚类簇
-        itemCluster = self.getCluster(item)
+        itemCluster = self.getItemCluster(item)
         userList = []
         for u in self.U:
             if u == user:
@@ -76,15 +77,15 @@ class UPCF():
         result = []
         for i in range(0, num):
             if userList[i]["sim"] != -100:
-                result.append(userList[i]["userID"])
+                result.append(userList[i])
         return result
 
     # 计算 u,v之间在item下的相似度 u,v是用户id
     # 如果无法计算，返回-100
     def sim(self, u, v, item, itemCluster):
         # Du,Dv是u，v各自评分向量
-        Du = self.R.getRow(u)
-        Dv = self.R.getRow(v)
+        Du = self.R.getTightRow(u)
+        Dv = self.R.getTightRow(v)
 
         # Iu,Iv是u，v各自的项目id集合
         # UPCF中这里的项目必须是项目簇中的项目
@@ -98,18 +99,18 @@ class UPCF():
         Rv = 0.0
 
         # 设置Iu
-        for i in range(0, len(Du)):
+        for i in Du:
             # 如果有评分，且该评分的项目在项目簇中,保存这个项目
-            if Du[i] > 0.0 and (self.iiMapR[i] in itemCluster):
-                Ru += Du[i]
-                Iu.append(self.iiMapR[i])
+            if i["item"] in itemCluster:
+                Ru += i["value"]
+                Iu.append(i["item"])
 
         # 设置Iv
-        for i in range(0, len(Dv)):
+        for i in Dv:
             # 如果有评分，且该评分的项目在项目簇中,保存这个项目
-            if Dv[i] != 0.0 and (self.iiMapR[i] in itemCluster):
-                Rv += Dv[i]
-                Iv.append(self.iiMapR[i])
+            if i["item"] in itemCluster:
+                Rv += i["value"]
+                Iv.append(i["item"])
 
         # 如果没有评分项目，跳过
         if len(Iu) == 0 or len(Iv) == 0:
@@ -149,10 +150,8 @@ class UPCF():
     def forecast(self, u, q):
         Ru = self.mean(u)
 
-        # TODO 项目q可能不存在
-        # q是在check集合中的，而check集合中的项目可能不存在于test集合中
-
         # 最近10个用户
+        # userCluster:{"userID":"sim"}
         userCluster = self.getUserCluster(u, q, 10)
 
         # 如果没有近邻用户，返回0
@@ -160,16 +159,16 @@ class UPCF():
             return 0
 
         # 项目簇
-        itemCluster = self.getCluster(q)
+        itemCluster = self.getItemCluster(q)
 
         tempUp = 0.0
         tempDown = 0.0
         for v in userCluster:
             # 用户u和v的相似度
-            simuv = self.sim(u, v, q, itemCluster)
+            simuv = v["sim"]
 
-            Rv = self.mean(v)
-            tUp = simuv * (self.R.getData(v, q) - Rv)
+            Rv = self.mean(v["userID"])
+            tUp = simuv * (self.R.getData(v["userID"], q) - Rv)
             tempUp += tUp
 
             tDown = abs(simuv)
@@ -186,12 +185,12 @@ class UPCF():
             result = 5
         return result
 
-    # 获取项目i的聚类簇
-    # item:item 编号
-    # I:项目列表
-    # tagList:项目聚类标签列表
-    # iiMap: item index -> index
-    def getCluster(self, item):
+    def calculateItemCluster(self):
+        for i in self.I:
+            cluster = self.__calculateItemCluster(i)
+            self.itemClusterCache[i] = cluster
+
+    def __calculateItemCluster(self, item):
         # 获取项目在列表中的编号
         index = self.iiMap[item]
         # 获取项目聚类编号
@@ -203,8 +202,12 @@ class UPCF():
             tempTag = self.tagList[i]
             if tempTag == tag:
                 cluster.append(self.I[i])
-
         return cluster
+
+    # 获取项目i的聚类簇
+    # item:item 编号
+    def getItemCluster(self, item):
+        return self.itemClusterCache[item]
 
     def run(self, checkDataFile, forecastDataFile, realDataFile):
         print("into run")
@@ -217,10 +220,22 @@ class UPCF():
         realMatrix = []
 
         print("start")
-        widgets = ['Progress: ', Percentage(), ' ', Bar(marker=RotatingMarker('>-=')),
-                   ' ', ETA(), ' ', FileTransferSpeed()]
 
-        pbar = ProgressBar(widgets=widgets, maxval=len(checkData)).start()
+#        # 测试
+#        if True:
+#            line = checkData[0]
+#            u = int(line[0])
+#            item = int(line[1])
+#            real = float(line[2])
+#            print("start test forecast")
+#            f = self.forecast(u, item)
+#            print("test forecast over")
+#            sys.exit(-1)
+
+        widget = [Percentage(), ' ', Bar(marker=RotatingMarker('>-='))]
+        pbar = ProgressBar(widgets=widget, maxval=len(checkData)).start()
+
+        count = 0.0
 
         for line in checkData:
             u = int(line[0])
@@ -233,9 +248,10 @@ class UPCF():
                 realValue.append(real)
                 forecastMatrix.append([u, item, f])
                 realMatrix.append([u, item, real])
-            pbar.update(1)
-
+            count = count + 1.0
+            pbar.update(count)
         pbar.finish()
+
         saveData(forecastMatrix, forecastDataFile)
         saveData(realMatrix, realDataFile)
 
