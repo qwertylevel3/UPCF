@@ -5,7 +5,6 @@ import math
 from RMatrix import *
 from util.path import *
 from util.mycsv import *
-
 from evaluate import evaluate
 from sklearn.cluster import KMeans
 from progressbar import *
@@ -62,7 +61,6 @@ class UPCF():
         self.calculateItemCluster()
         print("calculate item cluster cache over")
 
-
     # 计算用户user在item下的近邻用户组,取最近的num个
     def getUserCluster(self, user, item, num):
         # 项目的聚类簇
@@ -86,8 +84,8 @@ class UPCF():
     # 如果无法计算，返回-100
     def sim(self, u, v, item, itemCluster):
         # Du,Dv是u，v各自评分向量
-        Du = self.R.getRow(u)
-        Dv = self.R.getRow(v)
+        Du = self.R.getTightRow(u)
+        Dv = self.R.getTightRow(v)
 
         # Iu,Iv是u，v各自的项目id集合
         # UPCF中这里的项目必须是项目簇中的项目
@@ -101,18 +99,18 @@ class UPCF():
         Rv = 0.0
 
         # 设置Iu
-        for i in range(0, len(Du)):
+        for i in Du:
             # 如果有评分，且该评分的项目在项目簇中,保存这个项目
-            if Du[i] > 0.0 and (self.iiMapR[i] in itemCluster):
-                Ru += Du[i]
-                Iu.append(self.iiMapR[i])
+            if i["item"] in itemCluster:
+                Ru += i["value"]
+                Iu.append(i["item"])
 
         # 设置Iv
-        for i in range(0, len(Dv)):
+        for i in Dv:
             # 如果有评分，且该评分的项目在项目簇中,保存这个项目
-            if Dv[i] != 0.0 and (self.iiMapR[i] in itemCluster):
-                Rv += Dv[i]
-                Iv.append(self.iiMapR[i])
+            if i["item"] in itemCluster:
+                Rv += i["value"]
+                Iv.append(i["item"])
 
         # 如果没有评分项目，跳过
         if len(Iu) == 0 or len(Iv) == 0:
@@ -211,7 +209,6 @@ class UPCF():
     def getItemCluster(self, item):
         return self.itemClusterCache[item]
 
-
     def run(self, checkDataFile, forecastDataFile, realDataFile):
         print("into run")
         # 预测
@@ -223,6 +220,17 @@ class UPCF():
         realMatrix = []
 
         print("start")
+
+#        # 测试
+#        if True:
+#            line = checkData[0]
+#            u = int(line[0])
+#            item = int(line[1])
+#            real = float(line[2])
+#            print("start test forecast")
+#            f = self.forecast(u, item)
+#            print("test forecast over")
+#            sys.exit(-1)
 
         widget = [Percentage(), ' ', Bar(marker=RotatingMarker('>-='))]
         pbar = ProgressBar(widgets=widget, maxval=len(checkData)).start()
