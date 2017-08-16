@@ -149,9 +149,6 @@ class UPCF():
     def forecast(self, u, q):
         Ru = self.mean(u)
 
-        # TODO 项目q可能不存在
-        # q是在check集合中的，而check集合中的项目可能不存在于test集合中
-
         # 最近10个用户
         userCluster = self.getUserCluster(u, q, 10)
 
@@ -188,9 +185,6 @@ class UPCF():
 
     # 获取项目i的聚类簇
     # item:item 编号
-    # I:项目列表
-    # tagList:项目聚类标签列表
-    # iiMap: item index -> index
     def getCluster(self, item):
         # 获取项目在列表中的编号
         index = self.iiMap[item]
@@ -217,10 +211,11 @@ class UPCF():
         realMatrix = []
 
         print("start")
-        widgets = ['Progress: ', Percentage(), ' ', Bar(marker=RotatingMarker('>-=')),
-                   ' ', ETA(), ' ', FileTransferSpeed()]
 
-        pbar = ProgressBar(widgets=widgets, maxval=len(checkData)).start()
+        widget = [Percentage(), ' ', Bar(marker=RotatingMarker('>-='))]
+        pbar = ProgressBar(widgets=widget,maxval=len(checkData)).start()
+
+        count=0.0
 
         for line in checkData:
             u = int(line[0])
@@ -233,9 +228,10 @@ class UPCF():
                 realValue.append(real)
                 forecastMatrix.append([u, item, f])
                 realMatrix.append([u, item, real])
-            pbar.update(1)
-
+            count=count+1.0
+            pbar.update(count)
         pbar.finish()
+
         saveData(forecastMatrix, forecastDataFile)
         saveData(realMatrix, realDataFile)
 

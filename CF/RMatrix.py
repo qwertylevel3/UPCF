@@ -158,13 +158,17 @@ class RMatrix:
 
     # 项目缺失值预测填充
     def fillMatrix(self):
-        widgets = ['Progress: ', Percentage(), ' ', Bar(marker=RotatingMarker('>-=')),
-                   ' ', ETA(), ' ', FileTransferSpeed()]
 
-        pbar = ProgressBar(widgets=widgets, maxval=self.lenx * self.leny).start()
+        widget = [Percentage(), ' ', Bar(marker=RotatingMarker('>-='))]
+
+        total = self.lenx * self.leny
+
+        pbar = ProgressBar(widgets=widget,maxval=total).start()
+        count = 0.0
         for i in range(1, self.lenx):
             for j in range(0, self.leny):
                 if self.matrix[i][j] == 0:
                     self.__fillItem(i, j)
-                    pbar.update(1)
+                count = count + 1.0
+                pbar.update(count)
         pbar.finish()
