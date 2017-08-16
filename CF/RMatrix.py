@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import math
 from progressbar import *
+from util import mycsv
 
 
 # 评分数据矩阵
@@ -58,9 +59,15 @@ class RMatrix:
 
         print("r mean over")
 
-        print("start fillMatrix")
-        # 填充空数据
-        self.fillMatrix()
+        if not os.path.exists("output/UPCF/filledMatrix.csv"):
+            print("start fillMatrix")
+            # 填充空数据
+            self.fillMatrix()
+            mycsv.saveData(self.filledMatrix,"output/UPCF/filledMatrix.csv")
+
+        else:
+            print("filledMatrix exist,read from file")
+            self.filledMatrix=mycsv.readCSV("output/UPCF/filledMatrix.csv")
         print("fillMatrix over")
 
     def __setData(self, data, i, j):

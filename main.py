@@ -10,20 +10,20 @@ from CF import BaseCF
 
 def run():
     print("run start")
-    allData = mycsv.readCSVnoTitle("output/small/test_0.csv")
+    allData = mycsv.readCSVnoTitle("output/big/test_0.csv")
     print("read allData over")
 
     cf = UPCF(allData)
     print("init upcf over")
     print cf.run(
-        "output/small/check_0.csv",
+        "output/big/check_0.csv",
         "output/UPCF/forecast_0.csv",
         "output/UPCF/real_0.csv"
     )
 
 
 def makeData():
-    splitData.extractSample("smallData/ratings.csv")
+    splitData.extractSample("data/ratings.csv")
 
 
 def main():
