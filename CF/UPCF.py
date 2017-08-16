@@ -57,13 +57,16 @@ class UPCF():
         self.tagList = KMeans(20, n_jobs=-1).fit_predict(itemFeature)
         print("kmeans over")
 
-        # TODO 加速:添加每个项目的聚类簇缓存
-        # TODO 加速:保存k-means聚类结果，下次运行直接读取
+        self.itemClusterCache = {}
+        print("calculate item cluster cache")
+        self.calculateItemCluster()
+        print("calculate item cluster cache over")
+
 
     # 计算用户user在item下的近邻用户组,取最近的num个
     def getUserCluster(self, user, item, num):
         # 项目的聚类簇
-        itemCluster = self.getCluster(item)
+        itemCluster = self.getItemCluster(item)
         userList = []
         for u in self.U:
             if u == user:
@@ -76,7 +79,7 @@ class UPCF():
         result = []
         for i in range(0, num):
             if userList[i]["sim"] != -100:
-                result.append(userList[i]["userID"])
+                result.append(userList[i])
         return result
 
     # 计算 u,v之间在item下的相似度 u,v是用户id
@@ -150,6 +153,7 @@ class UPCF():
         Ru = self.mean(u)
 
         # 最近10个用户
+        # userCluster:{"userID":"sim"}
         userCluster = self.getUserCluster(u, q, 10)
 
         # 如果没有近邻用户，返回0
@@ -157,16 +161,16 @@ class UPCF():
             return 0
 
         # 项目簇
-        itemCluster = self.getCluster(q)
+        itemCluster = self.getItemCluster(q)
 
         tempUp = 0.0
         tempDown = 0.0
         for v in userCluster:
             # 用户u和v的相似度
-            simuv = self.sim(u, v, q, itemCluster)
+            simuv = v["sim"]
 
-            Rv = self.mean(v)
-            tUp = simuv * (self.R.getData(v, q) - Rv)
+            Rv = self.mean(v["userID"])
+            tUp = simuv * (self.R.getData(v["userID"], q) - Rv)
             tempUp += tUp
 
             tDown = abs(simuv)
@@ -183,9 +187,12 @@ class UPCF():
             result = 5
         return result
 
-    # 获取项目i的聚类簇
-    # item:item 编号
-    def getCluster(self, item):
+    def calculateItemCluster(self):
+        for i in self.I:
+            cluster = self.__calculateItemCluster(i)
+            self.itemClusterCache[i] = cluster
+
+    def __calculateItemCluster(self, item):
         # 获取项目在列表中的编号
         index = self.iiMap[item]
         # 获取项目聚类编号
@@ -197,8 +204,13 @@ class UPCF():
             tempTag = self.tagList[i]
             if tempTag == tag:
                 cluster.append(self.I[i])
-
         return cluster
+
+    # 获取项目i的聚类簇
+    # item:item 编号
+    def getItemCluster(self, item):
+        return self.itemClusterCache[item]
+
 
     def run(self, checkDataFile, forecastDataFile, realDataFile):
         print("into run")
@@ -213,9 +225,9 @@ class UPCF():
         print("start")
 
         widget = [Percentage(), ' ', Bar(marker=RotatingMarker('>-='))]
-        pbar = ProgressBar(widgets=widget,maxval=len(checkData)).start()
+        pbar = ProgressBar(widgets=widget, maxval=len(checkData)).start()
 
-        count=0.0
+        count = 0.0
 
         for line in checkData:
             u = int(line[0])
@@ -228,7 +240,7 @@ class UPCF():
                 realValue.append(real)
                 forecastMatrix.append([u, item, f])
                 realMatrix.append([u, item, real])
-            count=count+1.0
+            count = count + 1.0
             pbar.update(count)
         pbar.finish()
 
