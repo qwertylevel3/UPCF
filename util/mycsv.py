@@ -1,6 +1,21 @@
 # -*- coding: utf-8 -*-
 import csv
 
+# 写入数组
+def saveVector(vector,fileName):
+    with open(fileName, 'wb') as csvfile:
+        writer = csv.writer(csvfile, dialect='excel')
+        for line in vector:
+            writer.writerow([line])
+
+def readVector(fileName):
+    csv_reader=csv.reader(open(fileName))
+
+    allData=[]
+    for line in csv_reader:
+        for data in line:
+            allData.append(data)
+    return allData
 
 # 读取csv文件
 def readCSV(fileName):
@@ -24,12 +39,7 @@ def readCSVnoTitle(fileName):
     return allData
 
 
-# 写入数组
-def saveVector(vector,fileName):
-    with open(fileName, 'wb') as csvfile:
-        writer = csv.writer(csvfile, dialect='excel')
-        for line in vector:
-            writer.writerow([line])
+
 
 # 写入数据到csv文件中
 def saveData(matrix, fileName):
