@@ -3,8 +3,8 @@ import csv
 
 # 写入数组
 def saveVector(vector,fileName):
-    with open(fileName, 'wb') as csvfile:
-        writer = csv.writer(csvfile, dialect='excel')
+    with open(fileName, 'w') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',',lineterminator='\n')
         for line in vector:
             writer.writerow([line])
 
@@ -43,16 +43,16 @@ def readCSVnoTitle(fileName):
 
 # 写入数据到csv文件中
 def saveData(matrix, fileName):
-    with open(fileName, 'wb') as csvfile:
-        writer = csv.writer(csvfile, dialect='excel')
+    with open(fileName, 'w') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',',lineterminator='\n')
         for line in matrix:
             writer.writerow(line)
 
 
 # 写数据某些行
 def saveDataRow(matrix, fileName, a, b):
-    with open(fileName, 'wb') as csvfile:
-        writer = csv.writer(csvfile, dialect='excel')
+    with open(fileName, 'w') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',',lineterminator='\n')
         i = a
         while i <= b:
             writer.writerow(matrix[i])
@@ -61,8 +61,8 @@ def saveDataRow(matrix, fileName, a, b):
 
 # 写数据的一部分
 def saveDataRowCol(matrix, fileName, a, b, c, d):
-    with open(fileName, 'wb') as csvfile:
-        writer = csv.writer(csvfile, dialect='excel')
+    with open(fileName, 'w') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',',lineterminator='\n')
         i = a
         while i <= b:
             temp = []

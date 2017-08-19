@@ -39,7 +39,7 @@ def extractRatingSample(ratingFile, checkDataFileName, testDataFileName):
             userCount[int(line[0])] = userCount[int(line[0])] + 1
             allUser[int(line[0])].append(line)
 
-    userCount = [c / 5 for c in userCount]
+    userCount = [int(c / 5) for c in userCount]
 
     # test集合中所有项目列表
     allTestItem = []
@@ -71,5 +71,5 @@ def extractRatingSample(ratingFile, checkDataFileName, testDataFileName):
 def extractSample(oriFile):
     for i in range(0, 5):
         extractRatingSample(oriFile,
-                            "output/big/check_" + str(i) + ".csv",
-                            "output/big/test_" + str(i) + ".csv")
+                            "output/small/check_" + str(i) + ".csv",
+                            "output/small/test_" + str(i) + ".csv")

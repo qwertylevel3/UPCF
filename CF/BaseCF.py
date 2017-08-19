@@ -2,7 +2,7 @@
 
 import csv
 import math
-from RMatrix import *
+from CF.RMatrix import *
 from util.path import *
 from util.mycsv import *
 

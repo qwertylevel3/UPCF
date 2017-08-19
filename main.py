@@ -5,7 +5,6 @@
 from util import splitData
 from util import mycsv
 from CF.UPCF import UPCF
-from CF import BaseCF
 import multiprocessing
 from evaluate import evaluate
 
@@ -17,31 +16,31 @@ def run():
 
     cf = UPCF(allData)
     print("init upcf over")
-    print cf.run(
+    print(cf.run(
         "output/small/check_0.csv",
         "output/UPCF/forecast_0.csv",
         "output/UPCF/real_0.csv"
-    )
-    checkData = mycsv.readCSV("output/small/check_0.csv")
-    pool = multiprocessing.Pool(processes=4)
-
-    result = pool.map(cf.forecastJob, checkData)
-
-    realValue = []
-    forecastValue = []
-    forecastMatrix = []
-    realMatrix = []
-
-    for r in result:
-        forecastValue.append(r["f"])
-        realValue.append(r["r"])
-        forecastMatrix.append(r["fd"])
-        realMatrix.append(r["rd"])
-    print evaluate.getMAE(forecastValue, realValue)
+    ))
+#    checkData = mycsv.readCSV("output/small/check_0.csv")
+#    pool = multiprocessing.Pool(processes=4)
+#
+#    result = pool.map(cf.forecastJob, checkData)
+#
+#    realValue = []
+#    forecastValue = []
+#    forecastMatrix = []
+#    realMatrix = []
+#
+#    for r in result:
+#        forecastValue.append(r["f"])
+#        realValue.append(r["r"])
+#        forecastMatrix.append(r["fd"])
+#        realMatrix.append(r["rd"])
+#    print(evaluate.getMAE(forecastValue, realValue))
 
 
 def makeData():
-    splitData.extractSample("data/ratings.csv")
+    splitData.extractSample("smallData/ratings.csv")
 
 
 def main():

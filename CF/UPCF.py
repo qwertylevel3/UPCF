@@ -2,13 +2,13 @@
 
 import csv
 import math
-from RMatrix import *
 from util.path import *
 from util.mycsv import *
 from evaluate import evaluate
 from sklearn.cluster import KMeans
 from progressbar import *
 import multiprocessing
+from CF.RMatrix import *
 
 
 class UPCF():
@@ -54,9 +54,9 @@ class UPCF():
 
         print("start kmeans")
         # k-means聚类，k=20
-#        self.tagList = KMeans(20, n_jobs=-1).fit_predict(itemFeature)
-        self.tagList=mycsv.readVector("output/UPCF/tag.csv")
-#        mycsv.saveVector(self.tagList,"output/UPCF/tag.csv")
+        # self.tagList = KMeans(20, n_jobs=-1).fit_predict(itemFeature)
+        self.tagList = mycsv.readVector("output/UPCF/tag.csv")
+        # mycsv.saveVector(self.tagList, "output/UPCF/tag.csv")
 
         print("kmeans over")
 
@@ -77,7 +77,7 @@ class UPCF():
                 "userID": u,
                 "sim": self.sim(user, u, item, itemCluster)
             })
-        userList.sort(cmp=None, key=lambda sim: sim["sim"], reverse=True)
+        userList.sort(key=lambda sim: sim["sim"], reverse=True)
         result = []
         for i in range(0, num):
             if userList[i]["sim"] != -100:
@@ -213,7 +213,7 @@ class UPCF():
     def getItemCluster(self, item):
         return self.itemClusterCache[item]
 
-    def forecastJob(self,line):
+    def forecastJob(self, line):
         u = int(line[0])
         item = int(line[1])
         real = float(line[2])
@@ -221,17 +221,17 @@ class UPCF():
         f = self.forecast(u, item)
         if f > 0:
             return {
-                "f":f,
-                "r":real,
-                "fd":[u,item,f],
-                "rd":[u,item,real]
+                "f": f,
+                "r": real,
+                "fd": [u, item, f],
+                "rd": [u, item, real]
             }
 
     def run(self, checkDataFile, forecastDataFile, realDataFile):
         print("into run")
         # 预测
         # 对每个待预测的项目，找近邻用户中有这个项目评分的，作为预测依据
-
+        checkData = mycsv.readCSV("output/small/check_0.csv")
         realValue = []
         forecastValue = []
         forecastMatrix = []
@@ -239,37 +239,36 @@ class UPCF():
 
         print("start")
 
-#        # 测试
-#        if True:
-#            line = checkData[0]
-#            u = int(line[0])
-#            item = int(line[1])
-#            real = float(line[2])
-#            print("start test forecast")
-#            f = self.forecast(u, item)
-#            print("test forecast over")
-#            sys.exit(-1)
+        #        # 测试
+        #        if True:
+        #            line = checkData[0]
+        #            u = int(line[0])
+        #            item = int(line[1])
+        #            real = float(line[2])
+        #            print("start test forecast")
+        #            f = self.forecast(u, item)
+        #            print("test forecast over")
+        #            sys.exit(-1)
 
 
-#        widget = [Percentage(), ' ', Bar(marker=RotatingMarker('>-='))]
-#        pbar = ProgressBar(widgets=widget, maxval=len(checkData)).start()
-#        count = 0.0
-#        for line in checkData:
-#            u = int(line[0])
-#            item = int(line[1])
-#            real = float(line[2])
-#            f = self.forecast(u, item)
-#            if f > 0:
-#                forecastValue.append(f)
-#                realValue.append(real)
-#                forecastMatrix.append([u, item, f])
-#                realMatrix.append([u, item, real])
-#            count = count + 1.0
-#            pbar.update(count)
-#        pbar.finish()
+        pbar = ProgressBar(maxval=len(checkData)).start()
+        count = 0.0
+        for line in checkData:
+            u = int(line[0])
+            item = int(line[1])
+            real = float(line[2])
+            f = self.forecast(u, item)
+            if f > 0:
+                forecastValue.append(f)
+                realValue.append(real)
+                forecastMatrix.append([u, item, f])
+                realMatrix.append([u, item, real])
+            count = count + 1.0
+            pbar.update(count)
+        pbar.finish()
+        print("end")
 
+        saveData(forecastMatrix, forecastDataFile)
+        saveData(realMatrix, realDataFile)
 
-#        saveData(forecastMatrix, forecastDataFile)
-#        saveData(realMatrix, realDataFile)
-
-#        return evaluate.getMAE(forecastValue, realValue)
+        return evaluate.getMAE(forecastValue, realValue)

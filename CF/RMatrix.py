@@ -2,6 +2,7 @@
 import math
 from progressbar import *
 from util import mycsv
+import os
 
 
 # 评分数据矩阵
