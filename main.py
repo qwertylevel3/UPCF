@@ -8,36 +8,22 @@ from CF.UPCF import UPCF
 import multiprocessing
 from evaluate import evaluate
 
+from util import path
 
 def run():
     print("run start")
-    allData = mycsv.readCSVnoTitle("output/small/test_0.csv")
+    allData = mycsv.readCSVnoTitle(path.smallSampleDir+"test_2.csv")
+    checkData = mycsv.readCSV(path.smallSampleDir+"check_2.csv")
     print("read allData over")
 
-    cf = UPCF(allData)
+    cf = UPCF(allData,checkData)
+
     print("init upcf over")
-    checkData = mycsv.readCSV("output/small/check_0.csv")
-    pool = multiprocessing.Pool(processes=4)
 
-    result = pool.map(cf.forecastJob, checkData)
+    print(cf.runMuliprocess(4))
 
-    realValue = []
-    forecastValue = []
-    forecastMatrix = []
-    realMatrix = []
-
-    for r in result:
-        f=r["f"]
-        if f>0:
-            forecastValue.append(r["f"])
-            realValue.append(r["r"])
-            forecastMatrix.append(r["fd"])
-            realMatrix.append(r["rd"])
-    print(evaluate.getMAE(forecastValue, realValue))
-
-
-def makeData():
-    splitData.extractSample("smallData/ratings.csv")
+def makeSmallData():
+    splitData.extractSample(path.smallOriDir+"ratings.csv",path.smallSampleDir)
 
 
 def main():

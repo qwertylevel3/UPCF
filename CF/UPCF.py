@@ -9,10 +9,12 @@ from sklearn.cluster import KMeans
 from progressbar import *
 import multiprocessing
 from CF.RMatrix import *
+from util import path
 
 
 class UPCF():
-    def __init__(self, allData):
+    def __init__(self, allData, checkData):
+        self.checkData = checkData
         # U:所有用户id列表
         # I:所有项目id列表
         # R:评分矩阵(r(i,j)=>用户i对项目j的评分)
@@ -50,13 +52,15 @@ class UPCF():
         for item in self.I:
             itemFeature.append(self.R.getFilledCol(item))
 
-        saveData(itemFeature, "output/itemFeature.csv")
+        saveData(itemFeature, path.upcfCacheDir+"itemFeature.csv")
 
         print("start kmeans")
+
+        # TODO 每次聚类结果不同
         # k-means聚类，k=20
-        # self.tagList = KMeans(20, n_jobs=-1).fit_predict(itemFeature)
-        self.tagList = mycsv.readVector("output/UPCF/tag.csv")
-        # mycsv.saveVector(self.tagList, "output/UPCF/tag.csv")
+        self.tagList = KMeans(20, n_jobs=-1).fit_predict(itemFeature)
+        #self.tagList = mycsv.readVector("output/UPCF/tag.csv")
+        mycsv.saveVector(self.tagList, path.upcfCacheDir+"tag.csv")
 
         print("kmeans over")
 
@@ -213,6 +217,17 @@ class UPCF():
     def getItemCluster(self, item):
         return self.itemClusterCache[item]
 
+    def forecastJobList(self, data):
+        result = []
+        pbar = ProgressBar(maxval=len(data)).start()
+        count = 0
+        for line in data:
+            result.append(self.forecastJob(line))
+            count = count + 1
+            pbar.update(count)
+        pbar.finish()
+        return result
+
     def forecastJob(self, line):
         u = int(line[0])
         item = int(line[1])
@@ -226,12 +241,49 @@ class UPCF():
                 "fd": [u, item, f],
                 "rd": [u, item, real]
             }
+        else:
+            return {
+                "f": 0,
+                "r": real,
+                "fd": [u, item, f],
+                "rd": [u, item, real]
+            }
 
-    def run(self, checkDataFile, forecastDataFile, realDataFile):
+    def runMuliprocess(self, processNumber):
+        datalen = int(len(self.checkData) / 4)
+
+        pool = multiprocessing.Pool(processes=processNumber)
+
+        result = []
+        for i in range(0, processNumber - 1):
+            result.append(pool.apply_async(self.forecastJobList, (self.checkData[i * datalen:(i + 1) * datalen],)))
+        result.append(pool.apply_async(self.forecastJobList,
+                                       (self.checkData[(processNumber - 1) * datalen:len(self.checkData)],)))
+
+        pool.close()
+        pool.join()
+
+        realValue = []
+        forecastValue = []
+        forecastMatrix = []
+        realMatrix = []
+
+        for resultLine in result:
+            temp = resultLine.get()
+            for r in temp:
+                f = r["f"]
+                if f > 0:
+                    forecastValue.append(r["f"])
+                    realValue.append(r["r"])
+                    forecastMatrix.append(r["fd"])
+                    realMatrix.append(r["rd"])
+        return evaluate.getMAE(forecastValue, realValue)
+
+    def run(self):
         print("into run")
         # 预测
         # 对每个待预测的项目，找近邻用户中有这个项目评分的，作为预测依据
-        checkData = mycsv.readCSV("output/small/check_0.csv")
+        # checkData = mycsv.readCSV("output/input/check_0.csv")
         realValue = []
         forecastValue = []
         forecastMatrix = []
@@ -250,25 +302,22 @@ class UPCF():
         #            print("test forecast over")
         #            sys.exit(-1)
 
-
-        pbar = ProgressBar(maxval=len(checkData)).start()
-        count = 0.0
-        for line in checkData:
-            u = int(line[0])
-            item = int(line[1])
-            real = float(line[2])
-            f = self.forecast(u, item)
-            if f > 0:
-                forecastValue.append(f)
-                realValue.append(real)
-                forecastMatrix.append([u, item, f])
-                realMatrix.append([u, item, real])
-            count = count + 1.0
-            pbar.update(count)
-        pbar.finish()
-        print("end")
-
-        saveData(forecastMatrix, forecastDataFile)
-        saveData(realMatrix, realDataFile)
-
-        return evaluate.getMAE(forecastValue, realValue)
+# pbar = ProgressBar(maxval=len(checkData)).start()
+#        count = 0.0
+#        for line in checkData:
+#            u = int(line[0])
+#            item = int(line[1])
+#            real = float(line[2])
+#            f = self.forecast(u, item)
+#            if f > 0:
+#                forecastValue.append(f)
+#                realValue.append(real)
+#                forecastMatrix.append([u, item, f])
+#                realMatrix.append([u, item, real])
+#            count = count + 1.0
+#            pbar.update(count)
+#        pbar.finish()
+#        print("end")
+#        saveData(forecastMatrix, forecastDataFile)
+#        saveData(realMatrix, realDataFile)
+#        return evaluate.getMAE(forecastValue, realValue)

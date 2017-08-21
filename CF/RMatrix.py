@@ -3,6 +3,7 @@ import math
 from progressbar import *
 from util import mycsv
 import os
+from util import path
 
 
 # 评分数据矩阵
@@ -66,18 +67,16 @@ class RMatrix:
         print("start tight matrix...")
 
         self.calculateTightMatrix()
-        mycsv.saveData(self.tightMatrix,"output/UPCF/tightMatrix.csv")
-        print("over tight matrix")
 
-        if not os.path.exists("output/UPCF/filledMatrix.csv"):
+        if not os.path.exists(path.matrixCacheDir+"filledMatrix.csv"):
             print("start fillMatrix")
             # 填充空数据
             self.fillMatrix()
-            mycsv.saveData(self.filledMatrix, "output/UPCF/filledMatrix.csv")
+            mycsv.saveData(self.filledMatrix, path.matrixCacheDir+"filledMatrix.csv")
 
         else:
             print("filledMatrix exist,read from file")
-            self.filledMatrix = mycsv.readCSV("output/UPCF/filledMatrix.csv")
+            self.filledMatrix = mycsv.readCSV(path.matrixCacheDir+"filledMatrix.csv")
         print("fillMatrix over")
 
     def __setData(self, data, i, j):
@@ -194,12 +193,9 @@ class RMatrix:
 
     # 项目缺失值预测填充
     def fillMatrix(self):
-
-        widget = [Percentage(), ' ', Bar(marker=RotatingMarker('>-='))]
-
         total = self.lenx * self.leny
 
-        pbar = ProgressBar(widgets=widget, maxval=total).start()
+        pbar = ProgressBar(maxval=total).start()
         count = 0.0
         for i in range(1, self.lenx):
             for j in range(0, self.leny):

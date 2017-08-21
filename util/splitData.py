@@ -68,8 +68,8 @@ def extractRatingSample(ratingFile, checkDataFileName, testDataFileName):
 
 
 # 将源数据切分
-def extractSample(oriFile):
+def extractSample(oriFile,outputDir):
     for i in range(0, 5):
         extractRatingSample(oriFile,
-                            "output/small/check_" + str(i) + ".csv",
-                            "output/small/test_" + str(i) + ".csv")
+                            outputDir+"check_" + str(i) + ".csv",
+                            outputDir+"test_" + str(i) + ".csv")

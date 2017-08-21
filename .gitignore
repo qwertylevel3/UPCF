@@ -101,10 +101,7 @@ ENV/
 .mypy_cache/
 
 
-/output/*.csv
-/output/BaseCF/*.csv
-/output/UPCF/*.csv
-/output/big/*.csv
-/output/small/*.csv
+/data/**/*.csv
+!/data/input/origin/*.csv
 
 /.idea
