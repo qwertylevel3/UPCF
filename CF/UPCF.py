@@ -52,15 +52,15 @@ class UPCF():
         for item in self.I:
             itemFeature.append(self.R.getFilledCol(item))
 
-        saveData(itemFeature, path.upcfCacheDir+"itemFeature.csv")
+        saveData(itemFeature, path.upcfCacheDir + "itemFeature.csv")
 
         print("start kmeans")
 
         # TODO 每次聚类结果不同
         # k-means聚类，k=20
         self.tagList = KMeans(20, n_jobs=-1).fit_predict(itemFeature)
-        #self.tagList = mycsv.readVector("output/UPCF/tag.csv")
-        mycsv.saveVector(self.tagList, path.upcfCacheDir+"tag.csv")
+        # self.tagList = mycsv.readVector("output/UPCF/tag.csv")
+        mycsv.saveVector(self.tagList, path.upcfCacheDir + "tag.csv")
 
         print("kmeans over")
 
@@ -249,6 +249,7 @@ class UPCF():
                 "rd": [u, item, real]
             }
 
+    # 多进程运行
     def runMuliprocess(self, processNumber):
         datalen = int(len(self.checkData) / 4)
 
@@ -321,3 +322,6 @@ class UPCF():
 #        saveData(forecastMatrix, forecastDataFile)
 #        saveData(realMatrix, realDataFile)
 #        return evaluate.getMAE(forecastValue, realValue)
+
+
+
