@@ -9,9 +9,9 @@ from util.mycsv import *
 from evaluate import evaluate
 
 itemFile = 'output/item.csv'
-nearestFile = "output/nearest.csv"
+nearestFile = "data/output/BaseCF/nearest.csv"
 unknowItemFile = 'output/unknowItem.csv'
-intimacyFile = 'output/intimacy.csv'
+intimacyFile = 'data/output/BaseCF/intimacy.csv'
 forecastFile = "output/forecast.csv"
 
 
@@ -45,8 +45,6 @@ def initData(allData):
     R = RMatrix(movieidMap, movieidMapR, len(U), len(I))
 
     R.initData(allData)
-    saveData(R.matrix,"output/matrix.csv")
-    saveData(R.filledMatrix,"output/filledMatrix.csv")
 
     return U, I, R
 
@@ -187,7 +185,7 @@ def getNearestMatrix(nearestNum, userNum, intimacy):
     for i in range(1, userNum + 1):
         # 去除第一个
         nearestList = intimacy[i][1:userNum + 1]
-        nearestList.sort(cmp=None, key=lambda intim: intim["value"], reverse=True)
+        nearestList.sort(key=lambda intim: intim["value"], reverse=True)
         # 取前nearestNum个
         # 不取第一个，第一个一定是自己
         nearestList = nearestList[1:nearestNum + 1]

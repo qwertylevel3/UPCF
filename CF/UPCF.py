@@ -77,13 +77,20 @@ class UPCF():
         for u in self.U:
             if u == user:
                 continue
+            itemList = self.R.getItemIDList(u)
+            # 去除没有对item评分的用户
+            if item not in itemList:
+                continue
             userList.append({
                 "userID": u,
                 "sim": self.sim(user, u, item, itemCluster)
             })
         userList.sort(key=lambda sim: sim["sim"], reverse=True)
         result = []
+
         for i in range(0, num):
+            if i >= len(userList):
+                break
             if userList[i]["sim"] != -100:
                 result.append(userList[i])
         return result
@@ -284,7 +291,6 @@ class UPCF():
         print("into run")
         # 预测
         # 对每个待预测的项目，找近邻用户中有这个项目评分的，作为预测依据
-        # checkData = mycsv.readCSV("output/input/check_0.csv")
         realValue = []
         forecastValue = []
         forecastMatrix = []
@@ -292,36 +298,24 @@ class UPCF():
 
         print("start")
 
-        #        # 测试
-        #        if True:
-        #            line = checkData[0]
-        #            u = int(line[0])
-        #            item = int(line[1])
-        #            real = float(line[2])
-        #            print("start test forecast")
-        #            f = self.forecast(u, item)
-        #            print("test forecast over")
-        #            sys.exit(-1)
+        pbar = ProgressBar(maxval=len(self.checkData)).start()
+        count = 0.0
+        for line in self.checkData:
+            u = int(line[0])
+            item = int(line[1])
+            real = float(line[2])
+            f = self.forecast(u, item)
+            if f > 0:
+                forecastValue.append(f)
+                realValue.append(real)
+                forecastMatrix.append([u, item, f])
+                realMatrix.append([u, item, real])
+            count = count + 1.0
+            pbar.update(count)
+        pbar.finish()
+        print("end")
 
-# pbar = ProgressBar(maxval=len(checkData)).start()
-#        count = 0.0
-#        for line in checkData:
-#            u = int(line[0])
-#            item = int(line[1])
-#            real = float(line[2])
-#            f = self.forecast(u, item)
-#            if f > 0:
-#                forecastValue.append(f)
-#                realValue.append(real)
-#                forecastMatrix.append([u, item, f])
-#                realMatrix.append([u, item, real])
-#            count = count + 1.0
-#            pbar.update(count)
-#        pbar.finish()
-#        print("end")
-#        saveData(forecastMatrix, forecastDataFile)
-#        saveData(realMatrix, realDataFile)
-#        return evaluate.getMAE(forecastValue, realValue)
+        mycsv.saveData(forecastMatrix, "data/output/UPCF/forecast.csv")
+        mycsv.saveData(realMatrix, "data/output/UPCF/real.csv")
 
-
-
+        return evaluate.getMAE(forecastValue, realValue)
