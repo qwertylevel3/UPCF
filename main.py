@@ -8,13 +8,14 @@ from CF.UPCF import UPCF
 from CF import BaseCF
 import multiprocessing
 from evaluate import evaluate
+from util import cluster
 
 from util import path
 
 def runUPCFMuli():
     print("run start")
-    allData = mycsv.readCSVnoTitle(path.smallSampleDir+"test_2.csv")
-    checkData = mycsv.readCSV(path.smallSampleDir+"check_2.csv")
+    allData = mycsv.readCSVnoTitle(path.smallSampleDir+"test_0.csv")
+    checkData = mycsv.readCSV(path.smallSampleDir+"check_0.csv")
     print("read allData over")
 
     cf = UPCF(allData,checkData)
@@ -25,8 +26,8 @@ def runUPCFMuli():
 
 def runUPCF():
     print("run start")
-    allData = mycsv.readCSVnoTitle(path.smallSampleDir+"test_2.csv")
-    checkData = mycsv.readCSV(path.smallSampleDir+"check_2.csv")
+    allData = mycsv.readCSVnoTitle(path.smallSampleDir+"test_0.csv")
+    checkData = mycsv.readCSV(path.smallSampleDir+"check_0.csv")
     print("read allData over")
 
     cf = UPCF(allData,checkData)
@@ -49,8 +50,7 @@ def runBaseCF():
 
 
 def main():
-    runUPCF()
-
+    cluster.run()
 
 
 

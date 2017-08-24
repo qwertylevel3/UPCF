@@ -58,7 +58,7 @@ class UPCF():
 
         # TODO 每次聚类结果不同
         # k-means聚类，k=20
-        self.tagList = KMeans(20, n_jobs=-1).fit_predict(itemFeature)
+        self.tagList = KMeans(9, n_jobs=-1).fit_predict(itemFeature)
         # self.tagList = mycsv.readVector("output/UPCF/tag.csv")
         mycsv.saveVector(self.tagList, path.upcfCacheDir + "tag.csv")
 
