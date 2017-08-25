@@ -5,12 +5,28 @@
 from util import splitData
 from util import mycsv
 from CF.UPCF import UPCF
+from CF.FuckCF import FuckCF
 from CF import BaseCF
 import multiprocessing
 from evaluate import evaluate
 from util import cluster
+from util import neighbor
+
 
 from util import path
+
+
+def runFuckCF():
+    print("run start")
+    allData = mycsv.readCSVnoTitle(path.smallSampleDir+"test_0.csv")
+    checkData = mycsv.readCSV(path.smallSampleDir+"check_0.csv")
+    print("read allData over")
+
+    cf = FuckCF(allData,checkData)
+
+    print("init upcf over")
+
+    print(cf.run())
 
 def runUPCFMuli():
     print("run start")
@@ -42,15 +58,16 @@ def makeSmallData():
 
 def runBaseCF():
     print(BaseCF.run(
-        path.smallSampleDir+"test_2.csv",
-        path.smallSampleDir+"check_2.csv",
+        path.smallSampleDir+"test_0.csv",
+        path.smallSampleDir+"check_0.csv",
         "data/output/BaseCF/forecastData.csv",
         "data/output/BaseCF/realData.csv"
     ))
 
 
+
 def main():
-    cluster.run()
+    runFuckCF()
 
 
 

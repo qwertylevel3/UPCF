@@ -6,13 +6,14 @@ from util.path import *
 from util.mycsv import *
 from evaluate import evaluate
 from sklearn.cluster import KMeans
+from sklearn.neighbors import NearestNeighbors
 from progressbar import *
 import multiprocessing
 from CF.RMatrix import *
 from util import path
 
 
-class UPCF():
+class FuckCF():
     def __init__(self, allData, checkData):
         self.checkData = checkData
         # U:所有用户id列表
@@ -54,15 +55,12 @@ class UPCF():
 
         saveData(itemFeature, path.upcfCacheDir + "itemFeature.csv")
 
-        print("start kmeans")
+        print("start knn")
 
-        # TODO 每次聚类结果不同
-        # k-means聚类，k=20
-        self.tagList = KMeans(9, n_jobs=-1).fit_predict(itemFeature)
-        # self.tagList = mycsv.readVector("output/UPCF/tag.csv")
-        mycsv.saveVector(self.tagList, path.upcfCacheDir + "tag.csv")
+        self.neigh = NearestNeighbors(n_neighbors=100)
+        self.neigh.fit(itemFeature)
 
-        print("kmeans over")
+        print("knn over")
 
         self.itemClusterCache = {}
         print("calculate item cluster cache")
@@ -207,16 +205,14 @@ class UPCF():
 
     def __calculateItemCluster(self, item):
         # 获取项目在列表中的编号
-        index = self.iiMap[item]
-        # 获取项目聚类编号
-        tag = self.tagList[index]
+        result = self.neigh.kneighbors([self.R.getFilledCol(item)])
+
+        indexList = result[1][0]
 
         # 该项目聚类项目簇
         cluster = []
-        for i in range(0, len(self.I)):
-            tempTag = self.tagList[i]
-            if tempTag == tag:
-                cluster.append(self.I[i])
+        for i in indexList:
+            cluster.append(self.iiMapR[i])
         return cluster
 
     # 获取项目i的聚类簇
@@ -315,12 +311,7 @@ class UPCF():
         pbar.finish()
         print("end")
 
-        mycsv.saveData(forecastMatrix, "data/output/UPCF/forecast.csv")
-        mycsv.saveData(realMatrix, "data/output/UPCF/real.csv")
+        mycsv.saveData(forecastMatrix, "data/output/FuckCF/forecast.csv")
+        mycsv.saveData(realMatrix, "data/output/FuckCF/real.csv")
 
         return evaluate.getMAE(forecastValue, realValue)
-
-
-
-
-
