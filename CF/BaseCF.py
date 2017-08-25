@@ -42,7 +42,7 @@ def initData(allData):
     for i in range(0, len(I)):
         movieidMap[I[i]] = i
         movieidMapR[i] = I[i]
-    R = RMatrix(movieidMap, movieidMapR, len(U), len(I))
+    R = RMatrix(movieidMap, movieidMapR, max(U), len(I))
 
     R.initData(allData)
 
@@ -75,6 +75,10 @@ def sim(u, v, R):
         if Dv[i] != 0.0:
             Rv += Dv[i]
             Iv.append(R.getMovieidMapR()[i])
+    if len(Iu) == 0:
+        return 0
+    if len(Iv) == 0:
+        return 0
     Ru = Ru / len(Iu)
     Rv = Rv / len(Iv)
 
@@ -136,6 +140,7 @@ def forecast(u, q, R, intimacy, Nu):
 # 返回u的评价项目id列表
 def getItemList(u, R):
     return R.getItemIDList(u)
+
 
 # 获取u的未知项目列表
 def getUnknowItem(u, R, nearest):

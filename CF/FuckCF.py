@@ -29,12 +29,14 @@ class FuckCF():
             userid = int(line[0])
             movieid = int(line[1])
 
-            if userid not in self.U:
+            if int(userid) not in self.U:
                 self.U.append(userid)
             if int(movieid) not in self.I:
                 self.I.append(movieid)
 
         self.I = sorted(self.I)
+
+        mycsv.saveVector(self.I,"data/output/FuckCF/I.csv")
 
         self.iiMap = {}
         self.iiMapR = {}
@@ -57,7 +59,7 @@ class FuckCF():
 
         print("start knn")
 
-        self.neigh = NearestNeighbors(n_neighbors=100)
+        self.neigh = NearestNeighbors(n_neighbors=1000,radius=2.0)
         self.neigh.fit(itemFeature)
 
         print("knn over")
@@ -171,9 +173,6 @@ class FuckCF():
         if len(userCluster) == 0:
             return 0
 
-        # 项目簇
-        itemCluster = self.getItemCluster(q)
-
         tempUp = 0.0
         tempDown = 0.0
         for v in userCluster:
@@ -199,20 +198,25 @@ class FuckCF():
         return result
 
     def calculateItemCluster(self):
+        temp=[]
         for i in self.I:
             cluster = self.__calculateItemCluster(i)
             self.itemClusterCache[i] = cluster
+            temp.append(len(cluster))
+        mycsv.saveVector(temp,"data/output/FuckCF/clusterLen.csv")
 
     def __calculateItemCluster(self, item):
         # 获取项目在列表中的编号
         result = self.neigh.kneighbors([self.R.getFilledCol(item)])
+        #result=self.neigh.radius_neighbors([self.R.getFilledCol(item)],4.0)
 
         indexList = result[1][0]
 
         # 该项目聚类项目簇
         cluster = []
-        for i in indexList:
-            cluster.append(self.iiMapR[i])
+        for i in range(1,len(indexList)):
+            index=indexList[i]
+            cluster.append(self.iiMapR[index])
         return cluster
 
     # 获取项目i的聚类簇

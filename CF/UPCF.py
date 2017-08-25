@@ -28,7 +28,7 @@ class UPCF():
             userid = int(line[0])
             movieid = int(line[1])
 
-            if userid not in self.U:
+            if int(userid) not in self.U:
                 self.U.append(userid)
             if int(movieid) not in self.I:
                 self.I.append(movieid)
@@ -40,7 +40,7 @@ class UPCF():
         for i in range(0, len(self.I)):
             self.iiMap[self.I[i]] = i
             self.iiMapR[i] = self.I[i]
-        self.R = RMatrix(self.iiMap, self.iiMapR, len(self.U), len(self.I))
+        self.R = RMatrix(self.iiMap, self.iiMapR, max(self.U), len(self.I))
 
         # 评分矩阵初始化
         self.R.initData(allData)

@@ -3,17 +3,13 @@
 import csv
 from random import sample
 from util.mycsv import saveData
+from util import mycsv
 
 
 # 将评分数据切分为测试集合和训练集合
 # 比例为1:4
 def extractRatingSample(ratingFile, checkDataFileName, testDataFileName):
-    csv_reader = csv.reader(open(ratingFile))
-    allData = []
-    for line in csv_reader:
-        allData.append(line)
-    # 去除表头
-    allData = allData[1:len(allData)]
+    allData =mycsv.readCSVnoTitle(ratingFile)
 
     dataLen = len(allData)
 
@@ -29,15 +25,20 @@ def extractRatingSample(ratingFile, checkDataFileName, testDataFileName):
     allUser = []
     allUser.append([])
 
+    allUserIndex=[]
+
+    for line in allData:
+        if int(line[0]) not in allUserIndex:
+            allUserIndex.append(int(line[0]))
+
+    for i in range(0,max(allUserIndex)+1):
+        allUser.append([])
+        userCount.append(0)
+
     # 记录每个用户的评分项目数目
     for line in allData:
-        if int(line[0]) > len(userCount) - 1:
-            userCount.append(1)
-            allUser.append([])
-            allUser[int(line[0])].append(line)
-        else:
-            userCount[int(line[0])] = userCount[int(line[0])] + 1
-            allUser[int(line[0])].append(line)
+        userCount[int(line[0])] = userCount[int(line[0])] + 1
+        allUser[int(line[0])].append(line)
 
     userCount = [int(c / 5) for c in userCount]
 
@@ -45,6 +46,8 @@ def extractRatingSample(ratingFile, checkDataFileName, testDataFileName):
     allTestItem = []
 
     for i in range(1, len(userCount)):
+        if userCount[i]==0:
+            continue
         checkList = sample(allUser[i], userCount[i])
         testList = []
         for item in allUser[i]:
@@ -73,3 +76,9 @@ def extractSample(oriFile,outputDir):
         extractRatingSample(oriFile,
                             outputDir+"check_" + str(i) + ".csv",
                             outputDir+"test_" + str(i) + ".csv")
+
+
+
+
+
+

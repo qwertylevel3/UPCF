@@ -68,15 +68,15 @@ class RMatrix:
 
         self.calculateTightMatrix()
 
-        if not os.path.exists(path.matrixCacheDir+"filledMatrix.csv"):
+        if not os.path.exists(path.matrixCacheDir + "filledMatrix.csv"):
             print("start fillMatrix")
             # 填充空数据
             self.fillMatrix()
-            mycsv.saveData(self.filledMatrix, path.matrixCacheDir+"filledMatrix.csv")
+            mycsv.saveData(self.filledMatrix, path.matrixCacheDir + "filledMatrix.csv")
 
         else:
             print("filledMatrix exist,read from file")
-            self.filledMatrix = mycsv.readCSV(path.matrixCacheDir+"filledMatrix.csv")
+            self.filledMatrix = mycsv.readCSV(path.matrixCacheDir + "filledMatrix.csv")
         print("fillMatrix over")
 
     def __setData(self, data, i, j):
@@ -96,7 +96,7 @@ class RMatrix:
         return self.matrix[user]
 
     # 获取紧凑一行
-    def getTightRow(self,user):
+    def getTightRow(self, user):
         return self.tightMatrix[user]
 
     # 获取某个项目评分向量
@@ -117,6 +117,9 @@ class RMatrix:
             if itemList[i] != 0.0:
                 sum += itemList[i]
                 count = count + 1
+
+        if count == 0:
+            return 0
 
         return sum / count
 
@@ -186,10 +189,8 @@ class RMatrix:
                     self.tightMatrix[i].append({
                         "value": self.matrix[i][j],
                         "index": j,
-                        "item":self.movieidMapR[j]
+                        "item": self.movieidMapR[j]
                     })
-
-
 
     # 项目缺失值预测填充
     def fillMatrix(self):
